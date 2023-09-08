@@ -4,6 +4,7 @@ export const ImageGalleryItem = ({
   tag,
   onOpenModal,
   largeImage,
+  onClickedImg,
 }) => {
   return (
     <ImageItem>
@@ -11,7 +12,8 @@ export const ImageGalleryItem = ({
         src={webformaturl}
         alt={tag}
         onClick={() => {
-          onOpenModal(largeImage);
+          onClickedImg(largeImage);
+          onOpenModal(true);
         }}
       />
     </ImageItem>

@@ -1,6 +1,6 @@
 import { ImageGalleryItem } from 'components/imageGalleryitem/imagegalleryItem';
 import { ImageList } from './imagegallery.styled';
-export const ImageGallery = ({ images, onOpenModal }) => {
+export const ImageGallery = ({ images, onOpenModal, onClickedImg }) => {
   return (
     <ImageList>
       {images.map(item => {
@@ -11,6 +11,7 @@ export const ImageGallery = ({ images, onOpenModal }) => {
             tag={item.tags}
             onOpenModal={onOpenModal}
             largeImage={item.largeImageURL}
+            onClickedImg={onClickedImg}
           />
         );
       })}

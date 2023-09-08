@@ -1,93 +1,91 @@
 import { Searchbar } from './searchbar/searchbar';
 import { ImageGallery } from './imageGallery/imagegallery';
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchGet } from 'fetch';
 import { Button } from './button/button';
-import { Modal } from './modal/modal';
 import { Loader } from './loader';
 import { toast } from 'react-hot-toast';
-export class App extends Component {
-  state = {
-    search: '',
-    images: [],
-    loader: false,
-    error: false,
-    page: 1,
-    total: 0,
-    largeImage: '',
-  };
-  async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.search !== this.state.search ||
-      prevState.page !== this.state.page
-    ) {
-      try {
-        const slicedSearch = this.state.search.slice(
-          this.state.search.indexOf('/') + 1
-        );
-        this.setState({ loader: true });
-        const items = await fetchGet(slicedSearch, this.state.page);
-        this.setState(prevState => ({
-          images: [...prevState.images, ...items.hits],
-          total: items.total,
-        }));
-      } catch (error) {
-        this.setState({ error: true });
-      } finally {
-        this.setState({ loader: false });
-      }
+import Modal from 'react-modal';
+Modal.setAppElement('#root');
+export const App = () => {
+  const [search, setSearch] = useState('');
+  const [images, setImages] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [largeImage, setLargeImage] = useState('');
+  const [modalIsOpen, setOpenModal] = useState(false);
+  useEffect(() => {
+    if (!search) {
+      return;
     }
-  }
-  onSearch = searchWord => {
-    this.setState({
-      search: `${Date.now()}/${searchWord}`,
-      page: 1,
-      loader: false,
-      images: [],
-      total: 0,
-      largeImage: '',
-      error: false,
-    });
-  };
-  onLoadMore = async () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-    }));
-  };
-  onOpenModal = clickedImg => {
-    this.setState({
-      largeImage: clickedImg,
-    });
-  };
-  onCloseModal = overlay => {
-    this.setState({
-      largeImage: '',
-    });
-  };
+    const fetchGetEfect = async () => {
+      setLoader(true);
+      try {
+        const slicedSearch = search.slice(search.indexOf('/') + 1);
+        const items = await fetchGet(slicedSearch, page);
 
-  render() {
-    return (
-      <div>
-        <Searchbar onSubmit={this.onSearch} />
-        {this.state.loader && <Loader />}
-        {this.state.images.length > 0 && (
-          <ImageGallery
-            images={this.state.images}
-            onOpenModal={this.onOpenModal}
-          />
-        )}
-        {this.state.total / 12 > Math.ceil(this.state.page) && (
-          <Button onLoadMore={this.onLoadMore}>Load More</Button>
-        )}
-        {this.state.largeImage && (
-          <Modal
-            imgLarge={this.state.largeImage}
-            closeModal={this.onCloseModal}
-            onCloseModalEscape={this.onCloseModalEscape}
-          />
-        )}
-        {this.state.error && toast.error('Something Went Wrong')}
-      </div>
-    );
+        setImages(prevState => [...prevState, ...items.hits]);
+        setTotal(items.total);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoader(false);
+      }
+    };
+    fetchGetEfect();
+  }, [search, page]);
+
+  function onSearch(searchWord) {
+    setSearch(`${Date.now()}/${searchWord}`);
+    setImages('');
+    setLoader(false);
+    setError(false);
+    setLargeImage('');
+    setPage(1);
+    setTotal(0);
   }
-}
+  const onLoadMore = () => setPage(prev => prev + 1);
+  return (
+    <div>
+      <Searchbar onSubmit={onSearch} />
+      {loader && <Loader />}
+      {images.length > 0 && (
+        <ImageGallery
+          images={images}
+          onOpenModal={setOpenModal}
+          onClickedImg={setLargeImage}
+        />
+      )}
+      {total / 12 > Math.ceil(page) && (
+        <Button onLoadMore={onLoadMore}>Load More</Button>
+      )}
+
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => setOpenModal(false)}
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            justifycontent: 'center',
+            alignitems: 'center',
+          },
+          content: {
+            maxWidth: 'calc(100vw - 48px)',
+            maxHeight: 'calc(100vh - 24px)',
+          },
+        }}
+      >
+        <img src={largeImage} alt="" />
+      </Modal>
+      {error && toast.error('Something Went Wrong')}
+    </div>
+  );
+};
