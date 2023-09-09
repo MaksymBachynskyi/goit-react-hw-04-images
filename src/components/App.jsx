@@ -5,8 +5,7 @@ import { fetchGet } from 'fetch';
 import { Button } from './button/button';
 import { Loader } from './loader';
 import { toast } from 'react-hot-toast';
-import Modal from 'react-modal';
-Modal.setAppElement('#root');
+import { ModalEl } from './modal';
 export const App = () => {
   const [search, setSearch] = useState('');
   const [images, setImages] = useState([]);
@@ -61,30 +60,11 @@ export const App = () => {
       {total / 12 > Math.ceil(page) && (
         <Button onLoadMore={onLoadMore}>Load More</Button>
       )}
-
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setOpenModal(false)}
-        style={{
-          overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            display: 'flex',
-            justifycontent: 'center',
-            alignitems: 'center',
-          },
-          content: {
-            maxWidth: 'calc(100vw - 48px)',
-            maxHeight: 'calc(100vh - 24px)',
-          },
-        }}
-      >
-        <img src={largeImage} alt="" />
-      </Modal>
+      <ModalEl
+        modalIsOpen={modalIsOpen}
+        largeImage={largeImage}
+        onToogelModal={setOpenModal}
+      />
       {error && toast.error('Something Went Wrong')}
     </div>
   );
