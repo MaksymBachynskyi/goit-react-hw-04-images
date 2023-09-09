@@ -69,4 +69,3 @@ export const App = () => {
     </div>
   );
 };
-console.log('aaa');
